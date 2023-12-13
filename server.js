@@ -7,6 +7,7 @@ const pool = require("./db_connection"); // Importing the pool object
 const app = express(); // Creating an express application
 
 //Middlewares used
+const authenticateToken = require("./middlewares/authentication_middleware");
 app.use(express.json()); // Adding the express.json middleware to parse the JSON body
 
 // Importing the routes

@@ -14,8 +14,14 @@ router.post("/users/register", async (req, res) => {
   try {
     const { username, password, email } = req.body; // Destructuring the request body to get the username, password, and email
     const hashedPassword = await hashInfo(password); // Hashing the password using the hashInfo function which returns a promise
-    const encryptedUsername = await encrypt(username); // Encrypting the username using the encrypt function which returns a promise
-    //TODO: finish the code for the register endpoint
+    const encryptedUsername = encrypt(username); // Encrypting the username using the encrypt function
+    const encryptedEmail = encrypt(email); // Encrypting the email using the encrypt function
+    const newUser = await pool.query(
+      // Creating a new user in the database
+      "INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING *",
+      [encryptedUsername, hashedPassword, encryptedEmail]
+    );
+    res.status(201).json(newUser.rows[0]); // Sending a response with a status code of 201 and the new user
   } catch (error) {
     // Error handling
     console.error(error.message); // Logging the error message to the console
