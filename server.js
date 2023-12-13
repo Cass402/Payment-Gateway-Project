@@ -3,24 +3,31 @@
 
 // Importing the express module
 const express = require("express");
-const { Pool } = require("pg"); // Importing the node-postgres module
-require("dotenv").config(); // Importing the dotenv module for local environment variables
-
+const pool = require("./db_connection"); // Importing the pool object
 const app = express(); // Creating an express application
-const pool = new Pool({
-  // Creating a new pool object
-  user: process.env.DB_USER, // The user name for the database
-  host: process.env.DB_HOST, // The host where the database server is running
-  database: process.env.DB_DATABASE, // The database name
-  password: process.env.DB_PASSWORD, // The password for the database user
-  port: process.env.DB_PORT, // The port where the database server is listening
-  idleTimeoutMillis: 30000, // The time to wait before terminating the connection
-  //TODO - Add SSL
-});
 
-app.use(express.json()); // Adding the express.json middleware
+//Middlewares used
+app.use(express.json()); // Adding the express.json middleware to parse the JSON body
 
-//TODO - Add routes
+// Importing the routes
+const usersRoutes = require("./routes/users");
+const transactionsRoutes = require("./routes/transactions");
+const refundsRoutes = require("./routes/refunds");
+const user_sessionsRoutes = require("./routes/user_sessions");
+const payment_methodsRoutes = require("./routes/payment_methods");
+const failed_login_attemptsRoutes = require("./routes/failed_login_attempts");
+const audit_logsRoutes = require("./routes/audit_logs");
+const loginRoutes = require("./routes/login");
+
+// Adding the routes to the application
+app.use("/users", usersRoutes);
+app.use("/transactions", transactionsRoutes);
+app.use("/refunds", refundsRoutes);
+app.use("/user_sessions", user_sessionsRoutes);
+app.use("/payment_methods", payment_methodsRoutes);
+app.use("/failed_login_attempts", failed_login_attemptsRoutes);
+app.use("/audit_logs", audit_logsRoutes);
+app.use("/login", loginRoutes);
 
 app.get("/", (eq, res) => {
   // Defining the handler function for the / route
