@@ -16,4 +16,4 @@ jobs:
       - name: Repo Visualizer
         uses: githubocto/repo-visualizer@0.9.1
         with:
-          output-file: diagrams.png
+          output-file: diagrams.svg
