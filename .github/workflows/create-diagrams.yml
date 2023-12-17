@@ -12,8 +12,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Repo Visualizer
         uses: githubocto/repo-visualizer@0.9.1
         with:
           output-file: diagrams.svg
+          commit-message: "Update diagrams"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          should-push: true
