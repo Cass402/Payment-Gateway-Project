@@ -1,10 +1,18 @@
 /**The server.js file is used to set up the express server and will
  * serve as the entry point for the application. */
 
-// Importing the express module
-const express = require("express");
+require("dotenv").config(); // Loading the dotenv module for environment variables
+const https = require("https"); // Importing the https module
+const fs = require("fs"); // Importing the fs module
+const express = require("express"); // Importing the express module
 const pool = require("./db_connection"); // Importing the pool object
 const app = express(); // Creating an express application
+
+// Loading the SSL certificates
+const options = {
+  key: fs.readFileSync(process.env.SERVER_KEY_PATH),
+  cert: fs.readFileSync(process.env.CA_PATH),
+};
 
 //Middlewares used
 const authenticateToken = require("./middlewares/authentication_middleware");
@@ -18,7 +26,7 @@ const user_sessionsRoutes = require("./routes/user_sessions");
 const payment_methodsRoutes = require("./routes/payment_methods");
 const failed_login_attemptsRoutes = require("./routes/failed_login_attempts");
 const audit_logsRoutes = require("./routes/audit_logs");
-const loginRoutes = require("./routes/login");
+const login_logoutRoutes = require("./routes/login_logout");
 
 // Adding the routes to the application
 app.use("/users", usersRoutes);
@@ -28,7 +36,7 @@ app.use("/user_sessions", user_sessionsRoutes);
 app.use("/payment_methods", payment_methodsRoutes);
 app.use("/failed_login_attempts", failed_login_attemptsRoutes);
 app.use("/audit_logs", audit_logsRoutes);
-app.use("/login", loginRoutes);
+app.use("/login_logout", login_logoutRoutes);
 
 app.get("/", (eq, res) => {
   // Defining the handler function for the / route
@@ -48,6 +56,8 @@ process.on("exit", (code) => {
 });
 
 const port = process.env.PORT || 3000; // Setting the port
-app.listen(port, () => {
+
+// Creating an HTTPS server
+https.createServer(options, app).listen(port, () => {
   console.log(`Listening on port ${port}...`); // Displaying the port number
 });

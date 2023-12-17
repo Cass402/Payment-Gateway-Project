@@ -19,9 +19,9 @@ const pool = new Pool({
   ssl: {
     // The SSL configuration
     rejectUnauthorized: false, // This is to accept the self-signed certificate
-    ca: fs.readFileSync(process.env.CA_PATH).toString(), // The CA certificate (self-signed)
-    key: fs.readFileSync(process.env.KEY_PATH).toString(), // The private key of the client
-    cert: fs.readFileSync(process.env.CERT_PATH).toString(), // The certificate of the client
+    ca: fs.readFileSync(process.env.CA_PATH), // The CA certificate (self-signed)
+    key: fs.readFileSync(process.env.KEY_PATH), // The private key of the client
+    cert: fs.readFileSync(process.env.CERT_PATH), // The certificate of the client
   },
 });
 
