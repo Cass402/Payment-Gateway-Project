@@ -18,8 +18,8 @@ jobs:
       - name: Repo Visualizer
         uses: githubocto/repo-visualizer@0.9.1
         with:
-          output-file: diagrams.svg
-          commit-message: "Update diagrams"
+          output_file: diagrams.svg
+          commit_message: "Update diagrams"
           github-token: ${{ secrets.GITHUB_TOKEN }}
           branch: main
-          should-push: true
+          should_push: true
