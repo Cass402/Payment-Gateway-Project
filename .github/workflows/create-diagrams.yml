@@ -1,19 +1,19 @@
 name: Create Diagrams
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    create-diagrams:
-        runs-on: ubuntu-latest
-        
-        steps:
-            - name: Checkout
-                uses: actions/checkout@v4.1.1
-            
-            - name: Repo Visualizer
-                uses: githubocto/repo-visualizer@0.9.1
-                with:
-                    output-file: diagrams.png
+  create-diagrams:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Repo Visualizer
+        uses: githubocto/repo-visualizer@0.9.1
+        with:
+          output-file: diagrams.png

@@ -14,4 +14,8 @@ Encryption and decryption are CPU-bound operations which don't benefit much asyn
 
 To make it easier to authenticate and authorize, a token (specifically, a JSON Web Token(JWT)) is going to be used. When a user logs in, the server verifies the credentials and generates a JWT and sends it back to the client. The client will store it (usually in cookies) and includes it in the Authorization header of every subsequent request which the server verifies and uses. This approach is called stateless authentication and is well-suited for scalable applications. The benefit of this approach is that a session doesn't need to be created and maintained for each user.
 
-The authentication middleware is currently set-up to handle the authentication of logged in users. Revoking tokens and refreshing tokens is yet to be developed. The user_sessions table need to be removed and instead a token table (maybe) needs to be created.
+The authentication middleware is currently set-up to handle the authentication of logged in users. The middleware can now handle revoked tokens by checking the database whether the token is revoked and then verifying. If the token is invalid due to the token being expired, the client will then send a request to the /login_logout/refresh_auth to check the refresh token.
+
+The JWT generator has been modified to add a new function for generating refresh tokens and when the client logs in, they are sent two cookies - one for an authentication token and another for a refresh token - via HTTPS which they will use for authenticating themselves. The refresh token is also hashed and stored in the database for additonal security for checking the validity of the refresh token while refreshing the client's authentication.
+
+![Visualization of the codebase](./diagram.svg)
