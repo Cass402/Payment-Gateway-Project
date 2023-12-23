@@ -12,4 +12,9 @@ function hashInfo(info) {
   return bcrypt.hash(info, saltRounds); // Hashing the info using the bcryptjs library and the salt rounds and returning a promise
 }
 
-module.exports = hashInfo; // Exporting the function to be used in other files
+// Function to compare the sensitive information with the hashed information
+function compareInfo(info, hashedInfo) {
+  return bcrypt.compare(info, hashedInfo); // Comparing the info with the hashed info using the bcryptjs library and returning a promise
+}
+
+module.exports = { hashInfo, compareInfo }; // Exporting the functions for use in other files

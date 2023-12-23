@@ -5,7 +5,7 @@
  */
 require("dotenv").config(); // Importing the dotenv module for local environment variables
 const crypto = require("crypto"); // Importing the crypto module for encryption and decryption
-const algorithm = "aes-265-cbc"; // Defining the encryption algorithm
+const algorithm = "aes-256-cbc"; // Defining the encryption algorithm
 const key = process.env.ENCRYPTION_KEY; // Importing the encryption key from the .env file
 
 // Function to encrypt the JSON data

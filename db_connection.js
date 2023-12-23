@@ -16,13 +16,13 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD, // The password for the database user
   port: process.env.DB_PORT, // The port where the database server is listening
   idleTimeoutMillis: 30000, // The time to wait before terminating the connection
-  ssl: {
+  /**ssl: {
     // The SSL configuration
     rejectUnauthorized: false, // This is to accept the self-signed certificate
     ca: fs.readFileSync(process.env.CA_PATH), // The CA certificate (self-signed)
     key: fs.readFileSync(process.env.KEY_PATH), // The private key of the client
     cert: fs.readFileSync(process.env.CERT_PATH), // The certificate of the client
-  },
+  },*/
 });
 
 module.exports = pool; // Exporting the pool object

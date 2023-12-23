@@ -18,4 +18,10 @@ The authentication middleware is currently set-up to handle the authentication o
 
 The JWT generator has been modified to add a new function for generating refresh tokens and when the client logs in, they are sent two cookies - one for an authentication token and another for a refresh token - via HTTPS which they will use for authenticating themselves. The refresh token is also hashed and stored in the database for additonal security for checking the validity of the refresh token while refreshing the client's authentication.
 
+The hash_sensitive_info file has been modified to introduce a new function called compareInfo where bcrypt is used to check whether the entered password by a user logging in is the same as the stored hashed password in the database. The bcrypt compare() function extracts the salt from the hashed password and hashes the entered password with the same salt and checks if both match. The username and email are not going to be stored encrypted as it is usally not necessary and is necessary for other uses in the application and to ensure secure usage of it, any kind of data will be transferred via HTTPS only.
+
+The SSL connection for the database is not able to connect and has some issues but without the SSL, the database connects fine and queries work as expected. Jest and Supertest (used for sending HTTPS requests to the server) are used to test the functionality of the code logic. The db_connection.test.js is created to test this functionality and the test PASSED. The login_logout.test.js was created to the test the functionality of the /login_logout route and its tests have currently FAILED. Minor changes have been made across all routes (exporting the router object) in order to accomodate the testing of functionalities.
+
+A new file called start.js is created and the server.js app is imported in it and the file is used to officially start the HTTPS server and start the application. The server.js is exported as 'app' to allow for using it while testing.
+
 ![Visualization of the codebase](./diagram.svg)

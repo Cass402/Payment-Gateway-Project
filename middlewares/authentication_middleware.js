@@ -8,8 +8,7 @@ const pool = require("../db_connection"); // Importing the database connection p
 
 // Middleware function to authenticate a user
 function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"]; // Getting the authorization header from the request
-  const token = authHeader && authHeader.split(" ")[1]; // Getting the token from the authorization header
+  const token = req.cookies.token; // Getting the token from the cookie sent by the client
   if (token == null) {
     // If the token is null
     return res.status(401).json("Unauthorized"); // Sending a response with a status code of 401 and a message of "Unauthorized"
@@ -48,3 +47,5 @@ function authenticateToken(req, res, next) {
     }
   );
 }
+
+module.exports = authenticateToken; // Exporting the authenticateToken function
