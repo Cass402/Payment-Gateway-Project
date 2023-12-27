@@ -58,4 +58,4 @@ The `cookie-parser` middleware is installed and imported in `server.js`.
 
 ## Codebase Visualization
 
-![Visualization of the codebase](./diagram.svg)
+![Visualization of the codebase](./diagrams.svg)
