@@ -40,7 +40,9 @@ router.post("/login", login_logoutLimiter, async (req, res) => {
     );
     if (user.rows.length === 0) {
       // If the user is not found, let the client know that the username or password is incorrect (to prevent brute force attacks)
-      return res.status(401).json("Username or password is incorrect"); // Sending a response with a status code of 401 and a message of "Username or password is incorrect"
+      return res
+        .status(401)
+        .json({ message: "Username or password is incorrect" }); // Sending a response with a status code of 401 and a message of "Username or password is incorrect"
     } else if (user.rows[0].deleted_at !== null) {
       return res
         .status(401)
@@ -100,22 +102,7 @@ router.post("/refresh_auth", login_logoutLimiter, async (req, res) => {
     const refreshToken = req.cookies.refreshToken; // Getting the refresh token from the request cookie
     if (refreshToken == null) {
       // If the refresh token is null (not found), let the client know that the refresh token is not found in the cookie
-      return res.status(401).json("Authentication failed"); // Sending a response with a status code of 401 and a message of "Authentication failed"
-    }
-
-    //if the refresh token is not null
-    const hashed_refresh_token = await hashInfo(refreshToken); // Hashing the refresh token using the hashInfo function which returns a promise
-    const refreshTokenFromDB = await pool.query(
-      // Getting the refresh token from the database (to check if the refresh token is valid)
-      "SELECT * FROM refresh_tokens WHERE hashed_refresh_token = $1", // Query to get the refresh token from the database
-      [hashed_refresh_token]
-    );
-
-    if (refreshTokenFromDB.rows.length === 0) {
-      // If the refresh token is not found in the database, let the client know that the refresh token is not found in the database
-      return res.status(401).json("Authentication failed"); // Sending a response with a status code of 401 and a message of "Authentication failed"
-    } else if (refreshTokenFromDB.rows[0].expire_at < new Date()) {
-      // If the refresh token is expired, let the client know that the refresh token is expired
+      return res.status(401).json({ message: "Authentication failed" }); // Sending a response with a status code of 401 and a message of "Authentication failed"
     }
 
     // If the refresh token is exists and is not revoked, now verify the JWT token
@@ -125,12 +112,31 @@ router.post("/refresh_auth", login_logoutLimiter, async (req, res) => {
       async (err, user) => {
         if (err) {
           // If there is an error
-          return res.status(401).json("Authentication failed"); // Sending a response with a status code of 401 and a message of "Authentication failed"
+          return res.status(401).json({ message: "Refresh token invalid" }); // Sending a response with a status code of 401 and a message of "Refresh token invalid"
         }
 
-        // Check if the userid in the JWT token is the same as the userid in the refresh token database
-        if (user.user !== refreshTokenFromDB.rows[0].user_id) {
-          return res.status(401).json("Authentication failed"); // Sending a response with a status code of 401 and a message of "Authentication failed"
+        const refreshTokenFromDB = await pool.query(
+          // Getting the refresh token from the database (to check if the refresh token is valid) and if the refresh token is expired
+          "SELECT * FROM refresh_tokens WHERE user_id = $1", // Query to get the refresh token from the database
+          [user.user]
+        );
+
+        if (refreshTokenFromDB.rows.length === 0) {
+          // If the refresh token is not found in the database, let the client know that the refresh token is not found in the database
+          return res.status(401).json({ message: "Authentication failed" }); // Sending a response with a status code of 401 and a message of "Authentication failed"
+        } else if (refreshTokenFromDB.rows[0].expire_at < new Date()) {
+          // If the refresh token is expired, let the client know that the refresh token is expired
+          return res.status(401).json({ message: "Refresh token expired" }); // Sending a response with a status code of 401 and a message of "Refresh token expired"
+        }
+
+        const match = await compareInfo(
+          refreshToken,
+          refreshTokenFromDB.rows[0].hashed_refresh_token
+        ); // Comparing the refresh token with the hashed refresh token using the compareInfo function which returns a promise
+
+        if (!match) {
+          // If the refresh token does not match, let the client know that the refresh token is not found in the database
+          return res.status(401).json({ message: "Authentication failed" }); // Sending a response with a status code of 401 and a message of "Authentication failed"
         }
 
         //If the refresh token is valid, generate a new JWT token for authentication and another refresh token
@@ -177,13 +183,13 @@ router.post("/refresh_auth", login_logoutLimiter, async (req, res) => {
 
 // Route to logout a user (POST request)
 router.post("/logout", login_logoutLimiter, async (req, res) => {
-  // The function is declared as async to use the await keyword for asynchronous operations (promises and database queries)
+  // The function is declared as async to use the await keyword for asynchronous operations (promises and database queries
   try {
     const token = req.cookies.token; // Getting the token from the request cookie
     const refreshToken = req.cookies.refreshToken; // Getting the refresh token from the request cookie
-    if (token == null || refreshToken == null) {
+    if (!token || !refreshToken) {
       // If either the token or refresh token is null (not found), let the client know that the tokens were not found in the cookies
-      return res.status(401).json("Tokens not found in cookies"); // Sending a response with a status code of 412 and a message of "Tokens not found in cookies"
+      return res.status(400).json({ message: "Tokens not found in cookies" }); // Sending a response with a status code of 400 and a message of "Tokens not found in cookies"
     }
 
     // If the token and refresh token are found in the cookies, verify the JWT tokens
@@ -193,19 +199,15 @@ router.post("/logout", login_logoutLimiter, async (req, res) => {
     } catch (error) {
       // Error Handling for the JWT tokens
       console.error(error.message); // Logging the error message to the console
-      return res.status(401).json("Tokens invalid"); // Sending a response with a status code of 401 and a message of "Tokens invalid"
+      return res.status(401).json({ message: "Tokens invalid" }); // Sending a response with a status code of 401 and a message of "Tokens invalid"
     }
 
     // If the JWT tokens are valid, first revoke the token and then revoke the refresh token
     // Revoking the token
-    await pool.query(
-      "INSERT INTO revoked_tokens (revoked_token, expires_at) VALUES ($1, $2)",
-      [
-        // Inserting the revoked token and expires_at column into the revoked_tokens table
-        token, // inserting the revoked token
-        new Date(Date.now() + 60 * 60 * 1000), // Setting the expires_at column to 1 hour from now
-      ]
-    );
+    await pool.query("INSERT INTO revoked_tokens (revoked_token) VALUES ($1)", [
+      // Inserting the revoked token into the revoked_tokens table
+      token, // inserting the revoked token
+    ]);
 
     // Hashing the refresh token
     const hashed_refresh_token = await hashInfo(refreshToken); // Hashing the refresh token using the hashInfo function which returns a promise
@@ -222,7 +224,7 @@ router.post("/logout", login_logoutLimiter, async (req, res) => {
     res.clearCookie("token"); // Clearing the token cookie
     res.clearCookie("refreshToken"); // Clearing the refresh token cookie
 
-    res.status(200).json({ messsage: "Logout successful" }); // Sending a response with a status code of 200 and a message of "Logout successful"
+    res.status(200).json({ message: "Logout successful" }); // Sending a response with a status code of 200 and a message of "Logout successful"
   } catch (error) {
     // Error handling
     console.error(error.message); // Logging the error message to the console

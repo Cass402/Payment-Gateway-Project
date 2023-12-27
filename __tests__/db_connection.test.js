@@ -24,3 +24,8 @@ describe("Database Connection", () => {
     }
   });
 });
+
+afterAll(async () => {
+  // the afterAll function is used to run code after all the test cases are executed
+  await pool.end(); // the end function is used to end the database connection
+});
